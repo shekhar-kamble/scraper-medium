@@ -19,9 +19,9 @@ ActiveRecord::Schema.define(version: 20170704121447) do
     t.string "creator"
     t.string "title"
     t.string "details"
-    t.xml "bloghtml"
+    t.string "bloghtml"
+    t.string "response"
     t.string "tags", default: [], array: true
-    t.xml "response", default: [], array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

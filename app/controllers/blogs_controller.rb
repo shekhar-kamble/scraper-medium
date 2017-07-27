@@ -1,14 +1,17 @@
 class BlogsController < ApplicationController
+	respond_to :html, :xml, :json
 	def crawl(n,blogURL)
+    	require 'responders'
     	for i in n..n+9
-            browser = Watir::Browser.start blogURL[i]
-            doc = Nokogiri::HTML.parse(browser.html)
+            doc = Nokogiri::HTML.parse(open(blogURL[i], :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
     		blogObj = doc.css('.postMetaLockup--authorWithBio')
-            creator = blogObj.css('div')[1].css('a').text
-			details = blogObj.css('div')[1].css('div')[1].css('time').text + " , " + blogObj.css('div')[1].css('div')[1].css('span')[1].attributes["title"]
+            creator = blogObj.css('div a').text
+			details = blogObj.css('div div time').text + " , " 
+            blogObj = blogObj.css('div .js-testPostMetaInlineSupplemental .readingTime')
+            details = details + blogObj.xpath('//@title').first.value
             blogBody = doc.css('.postArticle-content').css('.section--body').css('.section-content')
             title = blogBody.css('.section-inner').css('h1').text
-            blogHTML = blogBody.to_html
+            blogHTML = blogBody.to_s
 
             #for tags
             blogObj = doc.css('.tags--postTags').css('li')
@@ -18,37 +21,29 @@ class BlogsController < ApplicationController
             end
             
             #for response
-            response = []
-            #loading all the responses
-            browser.button(class: 'responsesStream-showOtherResponses').click 
-            blogObj = doc.css('.responsesStreamWrapper').css('.streamItem')
-            for i in 0..blogObj.size-1
-                response.push(blogObj[i].to_html)
-            end
+            blogObj = doc.css('.responsesStreamWrapper')
+            response = blogObj
             
             #respond with the blog as object
-            if Blogs.exists?(title)
-    			respond_with Blogs.find(title)
+            if Blog.exists?(title)
+    			respond_with Blog.find(title)
     		else
-    			respond_with Blogs.create(:creator => creator,:title => title,:details => details :blogHTML => blogHTML,:tags => tags, :response =>response)	
+    			respond_with Blog.create(:creator => creator,:title => title,:details => details, :bloghtml => blogHTML, :response =>response, :tags => tags)	
     		end
     	end
     end
 	
     def scrapByTag
     	require 'openssl'
-    	require 'watir-webdriver'
-        doc = Nokogiri::HTML(open('https://medium.com/search?q='+params[:tag], :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
-		blogURL = doc.css('.postArticle--short').css('.postArticle-content').css('a')
+    	doc = Nokogiri::HTML(open('https://medium.com/search?q='+params[:tag], :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
+		blogURL = doc.css('.postArticle--short').css('.postArticle-content a').map { |link| link['href'] }
     	crawl(0,blogURL)
     end
 
     def scrapMore
         require 'openssl'
-        require 'watir-webdriver'
         url = 'https://medium.com/search/posts?q='+params[:tag]+'&count=20'
-        browser = Watir::Browser.start url
-        doc = Nokogiri::HTML.parse(browser.html)
+        doc = Nokogiri::HTML.parse(url)
         blogURL = doc.css('.postArticle--short').css('.postArticle-content').css('a')
         crawl(10,blogURL)    
     end

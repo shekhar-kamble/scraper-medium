@@ -4,9 +4,9 @@ class CreateBlogs < ActiveRecord::Migration[5.1]
       t.string :creator
       t.string :title
       t.string :details
-      t.xml :bloghtml
+      t.string :bloghtml
+      t.string :response
       t.string :tags, array: true, default: []
-      t.xml :response, array: true, default: []
 
       t.timestamps
     end

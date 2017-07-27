@@ -1,24 +1,15 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Web Scrapper for Medium.com
 
-Things you may want to cover:
+React.js with Ruby on Rails
 
-* Ruby version
+Features of the project:
 
-* System dependencies
+* The user inputs a tag name and the scrapper crawls 10 latest blogs.
 
-* Configuration
+* It shows list of blogs with creator name,title,and details.While data is being crawled,
+  the frontend display the blogs that are crawled in real time
 
-* Database creation
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+> front-end pending
